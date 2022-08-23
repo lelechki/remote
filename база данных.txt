@@ -1,0 +1,142 @@
+// Запрос на выборку
+SELECT * FROM family_budget.balance_object;
+
+// Запрос на добавление
+INSERT INTO `family_budget`.`balance_object` (`name`, `type`, `data`, `amount`) VALUES ('зарплата', '0', '16-02-2022', '50000.00');
+INSERT INTO `family_budget`.`balance_object` (`name`, `type`, `data`, `amount`) VALUES ('кварплата', '1', '25-02-2022', '15000.00');
+
+// Изменение параметра колонки amount
+ALTER TABLE `family_budget`.`balance_object` 
+CHANGE COLUMN `amount` `amount` DECIMAL(10,2) NOT NULL DEFAULT '0' ;
+
+// Запрос на добавление после изменений
+INSERT INTO `family_budget`.`balance_object` (`name`, `type`, `data`, `amount`) VALUES ('зарплата', '0', '16-02-2022', '50000');
+INSERT INTO `family_budget`.`balance_object` (`name`, `type`, `data`, `amount`) VALUES ('кварплата', '1', '25-02-2022', '15000');
+
+// Запрос на обновление
+UPDATE `family_budget`.`balance_object` SET `data` = '2022-02-16' WHERE (`id` = '1');
+UPDATE `family_budget`.`balance_object` SET `data` = '2022-02-20' WHERE (`id` = '2');
+
+
+
+
+
+package com.company.familybudget.service;
+import com.company.familybudget.model.BalanceObject;
+import com.company.familybudget.model.BalanceType;
+
+import java.math.BigDecimal;
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+public class DatabaseService {
+final static String URL="jdbc:mysql://127.0.0.1:3260/family_budget"+"?serverTimezone=Europe/Moscow&useSSL=false";
+final static String LOGIN="root";
+final static String PASSWORD="150180Lelya+";
+private static Connection connection;
+private static Connection getConnection(){ // Метод для доступа к закрытому методу connection. Он тоже закрытый,т.к. используем только в этом классе
+    if (connection!=null){return  connection;}
+    try {
+        connection= DriverManager.getConnection(URL,LOGIN,PASSWORD);// Подключаемся к классу /DriverManager  и
+        // вызываем метод getConnection, чтобы создать подключение
+    }catch (SQLException trowables){
+        trowables.printStackTrace();}
+    finally {return  connection;}
+    }
+    public static ArrayList<BalanceObject> Select() {
+        ArrayList<BalanceObject> resultList = new ArrayList<>();
+        try {
+            Statement statement = getConnection().createStatement();// Обращаемся к подключению
+            // Делаем запрос  с пом. метода executeQuery. Данным, возвращаемым от запроса  присваивается тип ResultSet
+            ResultSet resultSet = statement.executeQuery("SELECT*FROM  family_budget.balance_object");// Текст запроса передаем, как параметр в метод execureQuery у объекта statement
+            while (resultSet.next()) {//метод, осуществляющий переход к следующему элементу по  списку, пока не кончится список, возвращает тип boolean
+                int id = resultSet.getInt("id");
+                String name = resultSet.getNString("name");
+                int type = resultSet.getInt("type");
+                Date date = resultSet.getDate("date");
+                Double amount = resultSet.getDouble("amount");
+                System.out.println(id + '\t' + name + '\t' + type + '\t' + date + '\t' + amount);
+                resultList.add(new BalanceObject(id, name, BalanceType.values()[type], date, amount));
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+
+        return resultList;
+    }
+}
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.company</groupId>
+    <artifactId>FamilyBudget</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>FamilyBudget</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>5.8.1</junit.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>17.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>17.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.28</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <executions>
+                    <execution>
+                        <!-- Default configuration for running with: mvn clean javafx:run -->
+                        <id>default-cli</id>
+                        <configuration>
+                            <mainClass>com.company.familybudget/com.company.familybudget.Application</mainClass>
+                            <launcher>app</launcher>
+                            <jlinkZipName>app</jlinkZipName>
+                            <jlinkImageName>app</jlinkImageName>
+                            <noManPages>true</noManPages>
+                            <stripDebug>true</stripDebug>
+                            <noHeaderFiles>true</noHeaderFiles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

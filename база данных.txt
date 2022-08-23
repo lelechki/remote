@@ -1,4 +1,4 @@
-//И тут я написала
+//И тут я написала снова
 
 // Запрос на выборку
 SELECT * FROM family_budget.balance_object;
